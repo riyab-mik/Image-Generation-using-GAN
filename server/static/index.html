@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GAN Image Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            margin-top: 50px;
+        }
+        #imageContainer {
+            margin-top: 20px;
+        }
+        .chatbox {
+            width: 80%;
+            max-width: 600px;
+            margin: 0 auto;
+            text-align: left;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .message {
+            margin: 10px 0;
+        }
+        .message.user {
+            text-align: right;
+        }
+        .message.bot {
+            text-align: left;
+        }
+        .message p {
+            display: inline-block;
+            padding: 10px;
+            border-radius: 10px;
+        }
+        .message.user p {
+            background-color: #e0f7fa;
+        }
+        .message.bot p {
+            background-color: #f1f1f1;
+        }
+        #inputContainer {
+            margin-top: 20px;
+            text-align: center;
+        }
+        #promptInput {
+            width: 70%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        #submitBtn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        #submitBtn:hover {
+            background-color: #0056b3;
+        }/* Your existing styles */
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>GAN Image Generator</h1>
+        <div class="chatbox" id="chatbox">
+            <div class="message bot">
+                <p>Hello! Type something and I'll generate an image for you.</p>
+            </div>
+        </div>
+        <div id="inputContainer">
+            <input type="text" id="promptInput" placeholder="Enter your prompt here...">
+            <button id="submitBtn">Generate Image</button>
+        </div>
+    </div>
+    <script>
+        document.getElementById('submitBtn').addEventListener('click', function() {
+            var prompt = document.getElementById('promptInput').value;
+            if (!prompt) {
+                alert('Please enter a prompt.');
+                return;
+            }
+
+            // Add user message to chatbox
+            var chatbox = document.getElementById('chatbox');
+            var userMessage = document.createElement('div');
+            userMessage.classList.add('message', 'user');
+            userMessage.innerHTML = <p>${prompt}</p>;
+            chatbox.appendChild(userMessage);
+
+            // Clear input
+            document.getElementById('promptInput').value = '';
+
+            // Fetch generated image from server
+            fetch('/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ prompt: prompt })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Display the generated image
+                    var botMessage = document.createElement('div');
+                    botMessage.classList.add('message', 'bot');
+                    botMessage.innerHTML = <p><img src="data:image/png;base64,${data.image}" alt="Generated Image" style="max-width: 100%; height: auto;"/></p>;
+                    chatbox.appendChild(botMessage);
+                } else {
+                    // Handle failure
+                    var botMessage = document.createElement('div');
+                    botMessage.classList.add('message', 'bot');
+                    botMessage.innerHTML = <p>Sorry, something went wrong. Please try again.</p>;
+                    chatbox.appendChild(botMessage);
+                }
+                chatbox.scrollTop = chatbox.scrollHeight; // Scroll to the bottom
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                var botMessage = document.createElement('div');
+                botMessage.classList.add('message', 'bot');
+                botMessage.innerHTML = <p>Sorry, something went wrong. Please try again.</p>;
+                chatbox.appendChild(botMessage);
+                chatbox.scrollTop = chatbox.scrollHeight; // Scroll to the bottom
+            });
+        });
+    </script>
+</body>
+</html>

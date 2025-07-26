@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GAN Image Generator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(to right, #74ebd5, #9face6);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: #222;
+        }
+
+        h1 {
+            color: #333;
+            margin: 10px 0 30px 0;
+        }
+
+        #promptInput {
+            padding: 10px;
+            font-size: 1rem;
+            width: 90%;
+            max-width: 400px;
+            border: none;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        #submitBtn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #submitBtn:hover {
+            background-color: #45a049;
+        }
+
+        #result {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        #result img {
+            max-width: 90%;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            header h2 {
+                font-size: 1.2rem;
+            }
+
+            #promptInput {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h2>Meghnad Saha Institute of Technology</h2>
+    </header>
+
+    <h1>GAN Image Generator</h1>
+    <input type="text" id="promptInput" placeholder="Enter prompt" />
+    <button id="submitBtn">Generate Image</button>
+
+    <div id="result"></div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            console.log("JS loaded");
+
+            const btn = document.getElementById("submitBtn");
+
+            btn.addEventListener("click", function () {
+                const prompt = document.getElementById("promptInput").value;
+                console.log("Sending prompt:", prompt);
+
+                fetch("/generate", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ prompt: prompt })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    console.log("Response received:", data);
+                    if (data.success) {
+                        const img = new Image();
+                        img.src = "data:image/png;base64," + data.image;
+                        document.getElementById("result").innerHTML = '';
+                        document.getElementById("result").appendChild(img);
+                    } else {
+                        document.getElementById("result").textContent = "Failed: " + data.message;
+                    }
+                })
+                .catch(err => {
+                    console.error("Fetch error:", err);
+                    document.getElementById("result").textContent = "Error occurred.";
+                });
+            });
+        });
+    </script>
+</body>
+</html>
